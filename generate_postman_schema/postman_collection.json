@@ -1,0 +1,111 @@
+{
+  "info": {
+    "name": "Reap API Tools (Generated)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "POST {{API_BASE_URL}}/cards (tools/1_simulate_transaction/index.js)",
+      "request": {
+        "body": {
+          "mode": "raw",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "raw": "{\n  \"cardType\": \"Virtual\",\n  \"customerType\": \"Consumer\",\n  \"kyc\": {\n    \"dob\": \"2000-07-22\",\n    \"firstName\": \"Tc\",\n    \"idDocumentNumber\": \"1234567\",\n    \"idDocumentType\": \"Passport\",\n    \"lastName\": \"Pan\",\n    \"residentialAddress\": {\n      \"city\": \"Victoria City\",\n      \"country\": \"HKG\",\n      \"line1\": \"75 Test\",\n      \"line2\": \"Test Street\"\n    }\n  },\n  \"meta\": {\n    \"id\": \"1\",\n    \"otpPhoneNumber\": {\n      \"dialCode\": 60,\n      \"phoneNumber\": \"123456789\"\n    }\n  },\n  \"preferredCardName\": \"Tc Pan\",\n  \"spendLimit\": \"1000\"\n}"
+        },
+        "header": [
+          {
+            "key": "x-reap-api-key",
+            "value": "{{API_KEY}}"
+          },
+          {
+            "key": "Accept-Version",
+            "value": "{{ACCEPT_VERSION}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "accept",
+            "value": "application/json"
+          }
+        ],
+        "method": "POST",
+        "url": {
+          "host": [
+            "{{API_BASE_URL}}"
+          ],
+          "path": [
+            "cards"
+          ],
+          "raw": "{{API_BASE_URL}}/cards"
+        }
+      }
+    },
+    {
+      "name": "POST {{API_BASE_URL}}/simulate/authorisation (tools/1_simulate_transaction/index.js)",
+      "request": {
+        "body": {
+          "mode": "raw",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "raw": "{\n  \"billAmount\": 100,\n  \"cardID\": \"{{cardId}}\",\n  \"simulateTimeout\": true,\n  \"transactionCurrency\": \"840\"\n}"
+        },
+        "header": [
+          {
+            "key": "x-reap-api-key",
+            "value": "{{API_KEY}}"
+          },
+          {
+            "key": "Accept-Version",
+            "value": "{{ACCEPT_VERSION}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "accept",
+            "value": "application/json"
+          }
+        ],
+        "method": "POST",
+        "url": {
+          "host": [
+            "{{API_BASE_URL}}"
+          ],
+          "path": [
+            "simulate",
+            "authorisation"
+          ],
+          "raw": "{{API_BASE_URL}}/simulate/authorisation"
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "API_BASE_URL",
+      "value": ""
+    },
+    {
+      "key": "API_KEY",
+      "value": ""
+    },
+    {
+      "key": "ACCEPT_VERSION",
+      "value": ""
+    },
+    {
+      "key": "WEBHOOK_SUBSCRIBE_URL",
+      "value": ""
+    }
+  ]
+}
