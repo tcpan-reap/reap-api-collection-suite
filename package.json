@@ -1,11 +1,16 @@
 {
   "type": "module",
   "scripts": {
-    "webhook": "node tools/webhook_server/server.js",
     "tunnel": "ngrok http 3001",
-    "subscribe:webhook": "node tools/webhook_server/subscribeWebhook.js",
-    "start:all": "concurrently -k -s first -n WEBHOOK,TUNNEL \"npm run webhook\" \"npm run tunnel\"",
-    "stop:all": "echo \"Use Ctrl+C in the terminal running start:all\"",
+    "webhook_sandbox": "node tools/webhook_server_sandbox/server.js",
+    "subscribe:webhook_sandbox": "node tools/webhook_server_sandbox/subscribeWebhook.js",
+    "start:all_sandbox": "concurrently -k -s first -n WEBHOOK,TUNNEL \"npm run webhook_sandbox\" \"npm run tunnel\"",
+    "stop:all_sandbox": "echo \"Use Ctrl+C in the terminal running start:all\"",
+
+    "webhook_staging": "node tools/webhook_server_staging/server.js",
+    "subscribe:webhook_staging": "node tools/webhook_server_staging/subscribeWebhook.js",
+    "start:all_staging": "concurrently -k -s first -n WEBHOOK,TUNNEL \"npm run webhook_staging\" \"npm run tunnel\"",
+    "stop:all_staging": "echo \"Use Ctrl+C in the terminal running start:all\"",
     "postman:gen": "node generate_postman_schema/generate_postman_collection.js"
   },
   "dependencies": {
