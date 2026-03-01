@@ -4,11 +4,11 @@ import fs from 'fs'
 import path from 'path'
 import FormData from 'form-data'
 
-const { API_BASE_URL_STAGING, API_KEY_STAGING } = process.env
+const { API_BASE_URL_SANDBOX, API_KEY_SANDBOX, API_BASE_URL_STAGING, API_KEY_STAGING, ACCEPT_VERSION } = process.env
 
-if (!API_BASE_URL_STAGING || !API_KEY_STAGING) 
+if (!API_BASE_URL_SANDBOX || !API_KEY_SANDBOX || !API_BASE_URL_STAGING || !API_KEY_STAGING || !ACCEPT_VERSION) 
 {
-    console.error('Missing API_BASE_URL_STAGING or API_KEY_STAGING in root .env')
+    console.error('Missing variables in .env')
     process.exit(1)
 }
 
@@ -16,7 +16,20 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-function makeClient() 
+function makeSandboxClient() 
+{
+    return axios.create({
+        baseURL: API_BASE_URL_SANDBOX,
+        headers: 
+        {
+            'x-reap-api-key': API_KEY_SANDBOX,
+            Accept: 'application/json',
+        },
+        timeout: 30_000,
+    })
+}
+
+function makeStagingClient() 
 {
     return axios.create
     ({
@@ -41,7 +54,9 @@ function assertFileExists(filePath, friendlyName)
 
 async function run() 
 {
-    const client = makeClient()
+    const stagingClient = makeStagingClient()
+    const sandboxClient = makeSandboxClient()
+    let kycPayload
     const filesDir = path.resolve(process.cwd(), 'universal_token_sharing_files')
 
     const passportPath = path.join(filesDir, 'passport.pdf')
@@ -53,9 +68,9 @@ async function run()
     try 
     {
         // STEP 1: Create Entity
-        const createEntityResponse = await client.post('/entity', 
+        const createEntityResponse = await stagingClient.post('/entity', 
         {
-            externalId: 'CUSTOMER-TEST-0000301',
+            externalId: 'CUSTOMER-TEST-0000307',
             type: 'INDIVIDUAL',
         })
 
@@ -143,11 +158,11 @@ async function run()
             },
         }
 
-        const submitRequirementResponse = await client.post(
+        const submitRequirementResponse = await stagingClient.post(
             `/entity/${encodeURIComponent(entityId)}/requirement`,
             {
-            requirementSlug: 'ukyc-canonical-kyc-data',
-            value: JSON.stringify(canonicalValue), 
+                requirementSlug: 'ukyc-canonical-kyc-data',
+                value: JSON.stringify(canonicalValue), 
             }
         )
 
@@ -160,13 +175,11 @@ async function run()
             const form = new FormData()
             form.append('files', fs.createReadStream(passportPath))
 
-            const res = await client.post(`/entity/${encodeURIComponent(entityId)}/requirement-slug/ukyc-id-document/upload`, form,
+            const res = await stagingClient.post(`/entity/${encodeURIComponent(entityId)}/requirement-slug/ukyc-id-document/upload`, form,
             {
                 headers: 
                 {
                     ...form.getHeaders(),
-                    'x-reap-api-key': API_KEY_STAGING,
-                    Accept: 'application/json',
                 },
             })
 
@@ -180,14 +193,12 @@ async function run()
             const form = new FormData()
             form.append('files', fs.createReadStream(utilityBillPath))
 
-            const res = await client.post(
+            const res = await stagingClient.post(
             `/entity/${encodeURIComponent(entityId)}/requirement-slug/ukyc-proof-of-address-document/upload`, form,
             {
                 headers: 
                 {
                     ...form.getHeaders(),
-                    'x-reap-api-key': API_KEY_STAGING,
-                    Accept: 'application/json',
                 },
             })
 
@@ -203,26 +214,53 @@ async function run()
         {
             const featureSlug = 'universal-kyc-card-issuance-kyc-api'
 
-            const res = await client.get(
+            const res = await stagingClient.get(
                 `/entity/${encodeURIComponent(entityId)}/signed-payload`,
                 {
                     params:
                     {
                         featureSlug,
-                    },
-                    headers:
-                    {
-                        Accept: 'application/json',
-                        'Content-Type': 'application/json',
-                        featureSlug,
-                        'x-reap-api-key': API_KEY_STAGING,
-                    },
+                    }
                 }
             )
 
+            kycPayload = res.data
             console.log('\nSigned payload fetched successfully')
             console.log('Status:', res.status)
             console.log('Response Data:', res.data)
+        }
+
+        // STEP 6: Card creation
+        {
+        const createCardRes = await sandboxClient.post(
+            '/cards',
+            {
+            cardType: 'Virtual',
+            spendLimit: 1000,
+            customerType: 'Consumer',
+            kyc: kycPayload,
+
+            preferredCardName: 'Tc Pan',
+            meta: {
+                otpPhoneNumber: {
+                dialCode: 60,
+                phoneNumber: '123456789',
+                },
+                id: '1',
+            },
+            },
+            {
+            headers: 
+            {
+                'Accept-Version': ACCEPT_VERSION,
+            },
+            }
+        )
+
+        console.log('\n✅ Card created successfully')
+        console.log('Status:', createCardRes.status)
+        console.log('Card ID:', createCardRes.data?.id)
+        console.log('Response Data:', createCardRes.data)
         }
 
         console.log('\n✅ All steps completed successfully')

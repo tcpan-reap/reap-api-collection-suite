@@ -1,9 +1,9 @@
 import 'dotenv/config'
 import axios from 'axios'
 
-const { API_BASE_URL, API_KEY, ACCEPT_VERSION } = process.env
+const { API_BASE_URL_SANDBOX, API_KEY_SANDBOX, ACCEPT_VERSION } = process.env
 
-if (!API_BASE_URL || !API_KEY || !ACCEPT_VERSION) 
+if (!API_BASE_URL_SANDBOX || !API_KEY_SANDBOX || !ACCEPT_VERSION) 
 {
     console.error('Missing API_BASE_URL, API_KEY, or ACCEPT_VERSION in root .env')
     process.exit(1)
@@ -15,7 +15,7 @@ async function run()
     {
         //STEP 1: Create card
         const createCardResponse = await axios.post(
-            `${API_BASE_URL}/cards`,
+            `${API_BASE_URL_SANDBOX}/cards`,
             {
                 cardType: 'Virtual',
                 spendLimit: '1000',
@@ -49,7 +49,7 @@ async function run()
             {
                 headers: 
                 {
-                    'x-reap-api-key': API_KEY,
+                    'x-reap-api-key': API_KEY_SANDBOX,
                     'Content-Type': 'application/json',
                     'Accept-Version': ACCEPT_VERSION,
                     accept: 'application/json',
@@ -63,7 +63,7 @@ async function run()
 
         // STEP 2: Simulate authorisation timeout
         const simulateAuthResponse = await axios.post(
-            `${API_BASE_URL}/simulate/authorisation`,
+            `${API_BASE_URL_SANDBOX}/simulate/authorisation`,
             {
                 cardID: cardId,
                 billAmount: 100,
@@ -73,7 +73,7 @@ async function run()
             {
                 headers: 
                 {
-                    'x-reap-api-key': API_KEY,
+                    'x-reap-api-key': API_KEY_SANDBOX,
                     'Content-Type': 'application/json',
                     'Accept-Version': ACCEPT_VERSION,
                     accept: 'application/json',
